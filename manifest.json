@@ -1,0 +1,20 @@
+{
+  "name": "312核心 · 心理学考研复习",
+  "short_name": "312核心",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#F7F5F1",
+  "theme_color": "#8B1E3F",
+  "lang": "zh-CN",
+  "description": "312 心理学考研五科复习：53 个单元，含框架、补点、辨析与真题分布。",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
