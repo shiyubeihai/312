@@ -130,6 +130,27 @@ button,input{font-family:inherit}
 .rnav{position:fixed;left:0;right:0;bottom:0;z-index:35;background:var(--bg);border-top:1px solid var(--line);display:flex;gap:10px;padding:8px 14px calc(8px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
 .rnav button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px;font:500 13px/1 "PingFang SC",sans-serif}
 .rnav button:disabled{opacity:.4}
+/* 批注 */
+.ann{cursor:pointer;border-radius:2px}
+.ann-h.r{background:rgba(192,82,63,.24)}
+.ann-h.b{background:rgba(47,111,158,.22)}
+.ann-u.r{border-bottom:2px solid #C0523F}
+.ann-u.b{border-bottom:2px solid #2F6F9E}
+html[data-theme="dark"] .ann-h.r{background:rgba(214,105,86,.32)}
+html[data-theme="dark"] .ann-h.b{background:rgba(90,150,196,.30)}
+.annbar{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));z-index:55;display:flex;align-items:center;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 8px;box-shadow:0 10px 30px rgba(0,0,0,.2);transform:translate(-50%,140%);transition:transform .18s ease;max-width:94vw}
+.annbar.on{transform:translate(-50%,0)}
+.annbar .ab{display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:transparent;color:var(--ink);font:500 11px/1 "PingFang SC",sans-serif;padding:5px 8px;border-radius:8px}
+.annbar .ab:active{background:var(--line)}
+.annbar .sw{width:24px;height:12px;border-radius:3px;display:block}
+.annbar .sw.r{background:rgba(192,82,63,.45)}
+.annbar .sw.b{background:rgba(47,111,158,.42)}
+.annbar .ul{width:24px;height:12px;display:block;border-bottom:3px solid}
+.annbar .ul.r{border-color:#C0523F}
+.annbar .ul.b{border-color:#2F6F9E}
+.annbar .x{font-size:18px;color:var(--sub);padding:5px 10px}
+.toast{position:fixed;left:50%;bottom:150px;transform:translate(-50%,10px);background:rgba(20,18,16,.86);color:#fff;font-size:12.5px;padding:8px 14px;border-radius:999px;z-index:70;opacity:0;transition:.2s;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
 /* 搜索 */
 .sheet{position:fixed;inset:0;z-index:60;background:var(--bg);display:none;flex-direction:column}
 .sheet.on{display:flex}
@@ -4059,6 +4080,14 @@ r²＝0.30 只表示解释 30%，不能说“x 决定 y”。回归宜内插，<
 </ol>
 <div class="foot"><b>考法</b>：选择（测验与编制者/结构的对应、智商类型）· 简答（编制流程、标准化含义、投射测验的优缺点、比率智商为何被取代）· 应用题（给定情境选测验并说明理由）。</div>
 </div></div></template>
+<div class="annbar" id="annBar">
+  <button class="ab" data-t="h" data-c="r"><i class="sw r"></i>高亮</button>
+  <button class="ab" data-t="h" data-c="b"><i class="sw b"></i>高亮</button>
+  <button class="ab" data-t="u" data-c="r"><i class="ul r"></i>下划线</button>
+  <button class="ab" data-t="u" data-c="b"><i class="ul b"></i>下划线</button>
+  <button class="ab x" id="annCancel">×</button>
+</div>
+<div class="toast" id="toast"></div>
 <div class="sheet" id="searchSheet">
   <div class="sh"><input id="q" type="search" placeholder="搜索考点、术语、实验…" autocomplete="off"><button class="close" id="closeSearch">关闭</button></div>
   <div class="results" id="results"><div class="empty">输入关键词，跨五科搜索</div></div>
@@ -4066,7 +4095,7 @@ r²＝0.30 只表示解释 30%，不能说“x 决定 y”。回归宜内插，<
 <script>
 const DATA = [{"id":"psy","name":"普通心理学","short":"普心","color":"#8B1E3F","soft":"#FBF1F3","desc":"十三章框架 · 19 个补点 · 55 组辨析","modules":[{"id":"psy-01","no":"01","title":"心理学概述","tag":"框架"},{"id":"psy-02","no":"02","title":"心理和行为的生物学基础","tag":"框架"},{"id":"psy-03","no":"03","title":"意识和注意","tag":"框架 · 补点 · 辨析"},{"id":"psy-04","no":"04","title":"感觉","tag":"框架 · 辨析"},{"id":"psy-05","no":"05","title":"知觉","tag":"框架 · 补点 · 辨析"},{"id":"psy-06","no":"06","title":"记忆","tag":"框架 · 补点 · 辨析"},{"id":"psy-07","no":"07","title":"思维","tag":"框架 · 补点 · 辨析"},{"id":"psy-08","no":"08","title":"语言","tag":"框架"},{"id":"psy-09","no":"09","title":"情绪和情感","tag":"框架 · 补点 · 辨析"},{"id":"psy-10","no":"10","title":"动机与意志","tag":"框架"},{"id":"psy-11","no":"11","title":"能力","tag":"框架"},{"id":"psy-12","no":"12","title":"人格","tag":"框架 · 补点 · 辨析"},{"id":"psy-13","no":"13","title":"社会心理","tag":"框架"},{"id":"psy-meta","no":"考","title":"覆盖矩阵与七周计划","tag":"考情"}]},{"id":"dev","name":"发展心理学","short":"发展","color":"#2F6F5E","soft":"#EFF7F4","desc":"39 个背诵点 · 纵向总表 · 真题分布","modules":[{"id":"dev-a","no":"A","title":"总论与理论（发 01–18）","tag":"背诵"},{"id":"dev-b","no":"B","title":"分阶段（发 19–39）","tag":"背诵"},{"id":"dev-c","no":"C","title":"必背实验（发 40）","tag":"背诵"},{"id":"dev-d","no":"D","title":"高频简答 / 综合题（8 道，先背骨架）","tag":"背诵"},{"id":"dev-table","no":"表","title":"阶段 × 领域纵向总表","tag":"表格"},{"id":"dev-exam","no":"题","title":"真题考点分布与优先级","tag":"考情"}]},{"id":"edu","name":"教育心理学","short":"教育","color":"#3A5A8C","soft":"#F0F4FA","desc":"36 个背诵点 · 理论启示 · 教育真题","modules":[{"id":"edu-a","no":"A","title":"学习理论（教 01–12）","tag":"背诵"},{"id":"edu-b","no":"B","title":"学习动机（教 13–21）","tag":"背诵"},{"id":"edu-c","no":"C","title":"学习迁移（教 22–24）","tag":"背诵"},{"id":"edu-d","no":"D","title":"知识、技能与策略（教 25–31）","tag":"背诵"},{"id":"edu-e","no":"E","title":"品德、教学与教师（教 32–36）","tag":"背诵"},{"id":"edu-f","no":"F","title":"答题模板（照写即可）","tag":"背诵"},{"id":"edu-table","no":"表","title":"理论—启示速查表","tag":"表格"},{"id":"edu-exam","no":"题","title":"教育心理学考点分布","tag":"考情"}]},{"id":"exp","name":"实验心理学","short":"实验","color":"#A06A2C","soft":"#FBF5EC","desc":"E1–E12 精读 · 八段式模板 · 12 道例题","modules":[{"id":"exp-1","no":"01","title":"三章总览","tag":"精读"},{"id":"exp-2","no":"02","title":"变量与实验控制","tag":"精读"},{"id":"exp-3","no":"03","title":"实验设计类型","tag":"精读"},{"id":"exp-4","no":"04","title":"实验效度","tag":"精读"},{"id":"exp-5","no":"05","title":"概述 · 研究方法 · 伦理","tag":"精读"},{"id":"exp-6","no":"06","title":"反应时法","tag":"精读"},{"id":"exp-7","no":"07","title":"传统心理物理学与心理量表法","tag":"精读"},{"id":"exp-8","no":"08","title":"信号检测论","tag":"精读"},{"id":"exp-9","no":"09","title":"听觉实验与视觉实验","tag":"精读"},{"id":"exp-10","no":"10","title":"知觉实验","tag":"精读"},{"id":"exp-11","no":"11","title":"学习与记忆实验","tag":"精读"},{"id":"exp-12","no":"12","title":"情绪 · 注意 · 思维实验","tag":"精读"},{"id":"exp-e13-0","no":"13","title":"实验设计大题八段式模板","tag":"模板"},{"id":"exp-e13-1","no":"13","title":"设计八段式例题 12 道 · 评分要点","tag":"例题"},{"id":"exp-e13-2","no":"13","title":"8 周打卡表","tag":"打卡"}]},{"id":"sm","name":"统计与测量","short":"统测","color":"#6B5B7A","soft":"#F5F2F8","desc":"统计 S1–S6 · 测量 M1–M4","modules":[{"id":"stat-1","no":"S1","title":"描述统计","tag":"精读"},{"id":"stat-2","no":"S2","title":"概率与抽样分布","tag":"精读"},{"id":"stat-3","no":"S3","title":"参数估计与假设检验","tag":"精读"},{"id":"stat-4","no":"S4","title":"t 检验","tag":"精读"},{"id":"stat-5","no":"S5","title":"方差分析","tag":"精读"},{"id":"stat-6","no":"S6","title":"回归 · 卡方 · 非参数","tag":"精读"},{"id":"meas-1","no":"M1","title":"经典测验理论（CTT）与信度","tag":"精读"},{"id":"meas-2","no":"M2","title":"效度","tag":"精读"},{"id":"meas-3","no":"M3","title":"项目分析 · 常模与分数解释","tag":"精读"},{"id":"meas-4","no":"M4","title":"测验编制与常见心理测验","tag":"精读"}]}];
 const LS = "core312.v1";
-const state = Object.assign({done:[], last:null, fs:17, theme:"light"}, read());
+const state = Object.assign({done:[], last:null, fs:17, theme:"light", ann:{}}, read());
 function read(){ try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch(e){ return {}; } }
 function save(){ try { localStorage.setItem(LS, JSON.stringify(state)); } catch(e){} }
 function $(s,r){ return (r||document).querySelector(s); }
@@ -4128,6 +4157,8 @@ function reader(sid, mid){
         '<button '+(idx>=s.modules.length-1?"disabled":"")+' onclick="go(\''+s.id+'\',\''+(idx<s.modules.length-1?s.modules[idx+1].id:"")+'\')">下一单元 ›</button></div>';
   render(h);
   wrapTables();
+  CUR={s:sid,m:mid};
+  applyAnns(mid);
   state.last={s:sid,m:mid}; save();
   $("#mark").onclick=()=>{ toggleDone(mid); $("#mark").textContent=state.done.includes(mid)?"✓":"○"; };
   window.scrollTo(0,0);
@@ -4144,6 +4175,160 @@ function toggleDone(mid){
   save();
 }
 function render(html){ $("#app").innerHTML=html; }
+
+/* ---------- 批注 ---------- */
+let CUR={s:null,m:null};
+let pendingSel=null, hideTimer=null, toastTimer=null;
+
+function textNodesOf(root){
+  const out=[]; const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null); let n;
+  while((n=w.nextNode())){ if(n.nodeValue && n.nodeValue.length) out.push(n); }
+  return out;
+}
+function offsetAt(root,node,off){
+  if(!node || node.nodeType!==3) return -1;
+  let acc=0;
+  for(const n of textNodesOf(root)){
+    if(n===node) return acc+off;
+    acc+=n.nodeValue.length;
+  }
+  return -1;
+}
+function startAt(root,offset){
+  let acc=0;
+  for(const n of textNodesOf(root)){
+    const len=n.nodeValue.length;
+    if(offset>=acc && offset<acc+len) return {node:n,off:offset-acc};
+    acc+=len;
+  }
+  const ns=textNodesOf(root);
+  if(!ns.length) return null;
+  const last=ns[ns.length-1];
+  return {node:last,off:last.nodeValue.length};
+}
+function endAt(root,offset){
+  let acc=0;
+  for(const n of textNodesOf(root)){
+    const len=n.nodeValue.length;
+    if(offset>acc && offset<=acc+len) return {node:n,off:offset-acc};
+    acc+=len;
+  }
+  const ns=textNodesOf(root);
+  if(!ns.length) return null;
+  return {node:ns[0],off:0};
+}
+function blockOf(node){
+  const e=node.nodeType===3?node.parentElement:node;
+  return e && e.closest ? e.closest("p,li,h1,h2,h3,h4,td,th,div") : null;
+}
+function selectionInfo(){
+  const sel=window.getSelection();
+  if(!sel || !sel.rangeCount || sel.isCollapsed) return null;
+  const r=sel.getRangeAt(0);
+  const root=$("#content");
+  if(!root || !root.contains(r.commonAncestorContainer)) return null;
+  const b1=blockOf(r.startContainer), b2=blockOf(r.endContainer);
+  if(!b1 || b1!==b2) return {cross:true};
+  const s=offsetAt(root,r.startContainer,r.startOffset);
+  const e=offsetAt(root,r.endContainer,r.endOffset);
+  if(s<0 || e<0 || e<=s) return null;
+  return {s:s,e:e,cross:false};
+}
+function showBar(on){
+  const bar=$("#annBar"); if(!bar) return;
+  bar.classList.toggle("on", !!on);
+}
+function hideBar(){ showBar(false); pendingSel=null; }
+function toast(msg){
+  const t=$("#toast"); if(!t) return;
+  t.textContent=msg; t.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("on"),1500);
+}
+function checkSel(){
+  const info=selectionInfo();
+  if(!info){ hideBar(); return; }
+  if(info.cross){ pendingSel=null; showBar(false); toast("请在同一段内选择"); return; }
+  pendingSel=info; showBar(true);
+}
+function addAnn(type,color){
+  if(!pendingSel || !CUR.m) return;
+  const ann={id:"a"+Date.now()+Math.floor(Math.random()*1000), s:pendingSel.s, e:pendingSel.e, type:type, color:color};
+  state.ann=state.ann||{};
+  const list=state.ann[CUR.m]=state.ann[CUR.m]||[];
+  const sel=window.getSelection(); if(sel) sel.removeAllRanges();
+  hideBar();
+
+  const same=list.findIndex(a=>a.s===ann.s && a.e===ann.e && a.type===type && a.color===color);
+  if(same>=0){ list.splice(same,1); save(); applyAnns(CUR.m); toast("已清除"); return; }
+  for(let i=list.length-1;i>=0;i--){ if(ann.s<list[i].e && ann.e>list[i].s) list.splice(i,1); }
+  list.push(ann); save();
+  applyAnns(CUR.m);
+  toast(type==="h" ? "已高亮" : "已加下划线");
+}
+function wrapAnn(root,a){
+  const st=startAt(root,a.s), en=endAt(root,a.e);
+  if(!st || !en) return;
+  const r=document.createRange();
+  r.setStart(st.node,st.off);
+  r.setEnd(en.node,en.off);
+  const sp=document.createElement("span");
+  sp.className="ann "+(a.type==="u"?"ann-u":"ann-h")+" "+(a.color==="b"?"b":"r");
+  sp.dataset.aid=a.id;
+  try{ r.surroundContents(sp); }
+  catch(e){ const frag=r.extractContents(); sp.appendChild(frag); r.insertNode(sp); }
+}
+function clearAnns(root){
+  root.querySelectorAll(".ann").forEach(sp=>{
+    const parent=sp.parentNode;
+    while(sp.firstChild) parent.insertBefore(sp.firstChild, sp);
+    parent.removeChild(sp);
+    parent.normalize();
+  });
+}
+function applyAnns(mid){
+  const root=$("#content"); if(!root) return;
+  clearAnns(root);
+  const list=(state.ann && state.ann[mid]) || [];
+  list.slice().sort((a,b)=>a.s-b.s).forEach(a=>wrapAnn(root,a));
+}
+function initAnns(){
+  const bar=$("#annBar"); if(!bar) return;
+  bar.querySelectorAll(".ab[data-t]").forEach(b=>{
+    b.addEventListener("pointerdown",e=>{
+      e.preventDefault();
+      addAnn(b.dataset.t, b.dataset.c);
+    });
+  });
+  const cancel=$("#annCancel");
+  if(cancel) cancel.addEventListener("pointerdown",e=>{ e.preventDefault(); hideBar(); });
+  document.addEventListener("selectionchange",()=>{
+    clearTimeout(hideTimer);
+    hideTimer=setTimeout(checkSel,150);
+  });
+  document.addEventListener("touchend",()=>{
+    clearTimeout(hideTimer);
+    hideTimer=setTimeout(checkSel,120);
+  });
+  document.addEventListener("mouseup",()=>{
+    clearTimeout(hideTimer);
+    hideTimer=setTimeout(checkSel,60);
+  });
+  $("#app").addEventListener("click",e=>{
+    const t=e.target.closest ? e.target.closest(".ann") : null;
+    if(!t || !CUR.m) return;
+    const id=t.dataset.aid;
+    const list=(state.ann && state.ann[CUR.m]) || [];
+    const i=list.findIndex(a=>a.id===id);
+    if(i<0) return;
+    if(confirm("清除这条批注？")){
+      const y=window.scrollY;
+      list.splice(i,1); save();
+      reader(CUR.s, CUR.m);
+      setTimeout(()=>window.scrollTo(0,y),0);
+    }
+  });
+}
 function route(){
   const h=location.hash.replace(/^#\/?/,"");
   if(h==="settings"){ settings(); document.querySelectorAll(".tab").forEach(t=>t.classList.remove("on")); return; }
@@ -4186,12 +4371,13 @@ function settings(){
    '<div class="setrow"><span>深色模式</span><div class="ctl"><button onclick="toggleTheme()">'+(state.theme==="dark"?"关":"开")+'</button></div></div>'+
    '<div class="setrow"><span>已掌握</span><div class="ctl"><span class="val">'+totalDone()+' / '+totalMods()+'</span></div></div>'+
    '<button class="danger" onclick="resetAll()">清空进度与记录</button>'+
-   '<p style="color:var(--sub);font-size:12px;line-height:1.7;margin-top:16px">本页为离线单文件，数据保存在本机浏览器；换浏览器或清除缓存会丢失进度。</p></div>';
+   '<p style="color:var(--sub);font-size:12px;line-height:1.7;margin-top:16px">选中正文可高亮或加下划线（红/蓝）；点已批注的文字可清除。批注与进度都保存在本机浏览器。</p>'+
+   '<p style="color:var(--sub);font-size:12px;line-height:1.7">离线单文件，换浏览器或清除缓存会丢失记录。</p></div>';
   render(s);
 }
 function setFs(d){ state.fs=Math.min(22,Math.max(14,state.fs+d)); save(); applyTheme(); }
 function toggleTheme(){ state.theme=state.theme==="dark"?"light":"dark"; save(); applyTheme(); settings(); }
-function resetAll(){ if(confirm("确定清空所有进度？")){ state.done=[]; state.last=null; save(); home(); } }
+function resetAll(){ if(confirm("确定清空所有进度与批注？")){ state.done=[]; state.last=null; state.ann={}; save(); home(); } }
 function shell(){
   applyTheme(); buildTabs();
   document.body.insertAdjacentHTML("afterbegin",
@@ -4201,6 +4387,7 @@ function shell(){
   buildTabs();
   $("#closeSearch").onclick=()=>$("#searchSheet").classList.remove("on");
   $("#q").addEventListener("input",e=>search(e.target.value));
+  initAnns();
 }
 function openSearch(){ $("#searchSheet").classList.add("on"); setTimeout(()=>$("#q").focus(),50); }
 shell(); route();
